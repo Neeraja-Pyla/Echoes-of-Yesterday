@@ -10,29 +10,30 @@ def generate_memory_story(memory, style="Nostalgic"):
     prompt = f"""
     You are Echoes of Yesterday, a thoughtful AI storyteller.
 
-    Create a beautiful, emotional story from this memory.
+    Create a meaningful story based on the user's memory.
 
-    Memory: {memory}
-    Style: {style}
+    User's memory:
+    {memory}
 
-    Rules:
-    - Preserve the user's original details.
-    - Do not invent personal facts.
+    Story style: {style}
+
+    Instructions:
+    - Preserve the details provided by the user.
+    - Do not invent factual personal history.
+    - Make the writing emotional and beautiful.
     - Never claim to communicate with deceased people.
-    - Write a meaningful title.
-    - Keep the story between 120 and 180 words.
+    - Give the story a meaningful title.
     """
 
     try:
         response = ollama.chat(
             model=TEXT_MODEL,
             messages=[
-                {"role": "user", "content": prompt}
-            ],
-            options={
-                "num_predict": 220,
-                "temperature": 0.7
-            }
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
         )
 
         return response["message"]["content"]
@@ -44,12 +45,23 @@ def generate_memory_story(memory, style="Nostalgic"):
 def analyze_photograph(image_bytes):
 
     prompt = """
-    Briefly describe visible objects, clothing,
-    environment and activities in this photograph.
+    Carefully describe this photograph.
 
-    Do not identify people or guess relationships,
-    dates, locations or personal history.
-    Keep the description under 80 words.
+    Identify only visible details such as:
+    - Objects
+    - Clothing
+    - Environment
+    - Activities
+    - Background
+    - Approximate visual setting
+
+    Important:
+    - Do not identify or guess people's identities.
+    - Do not guess relationships between people.
+    - Do not invent dates, locations or events.
+    - Clearly mention when something is uncertain.
+
+    Provide a short, meaningful visual description.
     """
 
     try:
@@ -61,10 +73,7 @@ def analyze_photograph(image_bytes):
                     "content": prompt,
                     "images": [image_bytes]
                 }
-            ],
-            options={
-                "num_predict": 100
-            }
+            ]
         )
 
         return response["message"]["content"]
@@ -85,14 +94,21 @@ def generate_visual_memory_story(
         return visual_description
 
     combined_memory = f"""
-    Visible photograph details:
+    VISUAL OBSERVATIONS FROM THE PHOTOGRAPH:
     {visual_description}
 
-    Personal memory provided by the user:
+    PERSONAL DETAILS PROVIDED BY THE USER:
     {user_memory}
 
-    Use both carefully. Do not treat visual observations
-    as confirmed personal facts.
+    Use the visual observations and personal details
+    together to create a meaningful story.
+
+    Do not treat visual guesses as confirmed facts.
     """
 
-    return generate_memory_story(combined_memory, style)
+    story = generate_memory_story(
+        combined_memory,
+        style
+    )
+
+    return story
